@@ -55,7 +55,7 @@ export default class AstRenderer {
    * @param parentNodes
    * @return {*}
    */
-  renderNode = (node, parentNodes, isRoot = false) => {
+  renderNode = (node, parentNodes, isRoot = false, prevNode) => {
     const renderFunction = this.getRenderFunction(node.type);
     const parents = [...parentNodes];
 
@@ -72,8 +72,9 @@ export default class AstRenderer {
     parents.unshift(node);
 
     // calculate the children first
-    let children = node.children.map((value) => {
-      return this.renderNode(value, parents);
+    let children = node.children.map((value, index) => {
+      const _prevNode = node.children[index - 1];
+      return this.renderNode(value, parents, false, _prevNode);
     });
 
     // render any special types of nodes that have different renderRule function signatures
@@ -155,7 +156,7 @@ export default class AstRenderer {
         }
       }
 
-      return renderFunction(node, children, parentNodes, this._style, styleObj);
+      return renderFunction(node, children, parentNodes, this._style, styleObj, prevNode);
     }
 
     // cull top level children
@@ -171,7 +172,7 @@ export default class AstRenderer {
 
     // render anythign else that has a normal signature
 
-    return renderFunction(node, children, parentNodes, this._style);
+    return renderFunction(node, children, parentNodes, this._style, prevNode);
   };
 
   /**
